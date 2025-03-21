@@ -1,0 +1,8 @@
+baltic:
+  minimum-age: 18
+  life-expectancy:
+    ee: 78
+    lv: 75
+    lt: 76
+  loan:
+    max-period: 48

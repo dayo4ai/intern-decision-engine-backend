@@ -6,6 +6,7 @@ import ee.taltech.inbankbackend.exceptions.InvalidLoanAmountException;
 import ee.taltech.inbankbackend.exceptions.InvalidLoanPeriodException;
 import ee.taltech.inbankbackend.exceptions.InvalidPersonalCodeException;
 import ee.taltech.inbankbackend.exceptions.NoValidLoanException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,6 +20,12 @@ public class DecisionEngine {
     // Used to check for the validity of the presented ID code.
     private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
     private int creditModifier = 0;
+    private final AgeValidatorFactory ageValidatorFactory;
+
+    @Autowired
+    public DecisionEngine(AgeValidatorFactory ageValidatorFactory) {
+        this.ageValidatorFactory = ageValidatorFactory;
+    }
 
     /**
      * Calculates the maximum loan amount and period for the customer based on their ID code,
@@ -123,5 +130,16 @@ public class DecisionEngine {
             throw new InvalidLoanPeriodException("Invalid loan period!");
         }
 
+    }
+
+    public DecisionResponse decideLoan(String personalCode, double loanAmount, int loanPeriod) {
+        AgeValidator validator = ageValidatorFactory.getValidator("EE");
+        
+        if (!validator.isValidAge(personalCode)) {
+            return new DecisionResponse(false, 0, loanPeriod, "Age validation failed");
+        }
+
+        // Continue with other loan decision logic
+        return processLoanDecision(personalCode, loanAmount, loanPeriod);
     }
 }
